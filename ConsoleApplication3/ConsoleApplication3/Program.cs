@@ -14,8 +14,16 @@ namespace ConsoleApplication3
             public int x;
             public int y;
             public int height;
+            public bool visited;
+            public location(int X,int Y,int Height)
+            {
+                this.x = X;
+                this.y = Y;
+                this.height = Height;
+                visited = false;
+            }
         }
-        public class pathes
+        public class paths
         {
             public Stack<location> path = new Stack<location>();
         }
@@ -25,10 +33,11 @@ namespace ConsoleApplication3
         private static int column; // the column length of the matrix
         
         
-        public static pathes getLongestPath(int i, int j)
+        public static paths getLongestPath(int i, int j)
         {
-            pathes p = new pathes();
-            pathes curPath = new pathes();
+            map[i, j].visited = true;
+            paths p = new paths();
+            paths curPath = new paths();
             if (j > 0 && map[i,j].height > map[i,j - 1].height)// search left direction
             {
                 curPath = getLongestPath(i, j - 1);
@@ -55,10 +64,7 @@ namespace ConsoleApplication3
                     p = curPath;       
                 }
             }
-            location l = new location();
-            l.x = i;
-            l.y = j;
-            l.height = map[i, j].height;
+            location l = new location(i,j, map[i, j].height);
             p.path.Push(l);
             return p;
         }
@@ -81,16 +87,12 @@ namespace ConsoleApplication3
                         {
                             try
                             {
-                                map[i - 1, j] = new location();
-                                map[i - 1, j].height = Convert.ToInt32(mapVerticalLocations[j]);
-                                map[i - 1, j].x = i;
-                                map[i - 1, j].y = j;
+                                map[i - 1, j] = new location(i,j, Convert.ToInt32(mapVerticalLocations[j]));
+                                
                             }
                             catch
                             {
-                                map[i - 1, j].height = -1;
-                                map[i - 1, j].x = i;
-                                map[i - 1, j].y = j;
+                                map[i - 1, j] = new location(i, j, -1);
                             }
                         }
                     }
@@ -101,31 +103,33 @@ namespace ConsoleApplication3
         }
         static void Main(string[] args)
         {
-            loadMapFromFile(@"d:\map.txt");
-            pathes longestPath = new pathes();
+            loadMapFromFile(@"maps\map.txt");
+            paths longestPath = new paths();
             for (int i = 0; i < row; i++)
             {
                 for (int j = 0; j < column; j++)
                 {
-
-                    pathes temp = getLongestPath(i, j);
-                    if (longestPath.path.Count == temp.path.Count)
+                    if (!map[i,j].visited)
                     {
-                        if (longestPath.path.Count > 0)
+                        paths temp = getLongestPath(i, j);
+                        if (longestPath.path.Count == temp.path.Count)
                         {
-                            if ((temp.path.Peek().height - temp.path.ElementAt(temp.path.Count - 1).height) > (longestPath.path.Peek().height - longestPath.path.ElementAt(longestPath.path.Count - 1).height))
+                            if (longestPath.path.Count > 0)
+                            {
+                                if ((temp.path.Peek().height - temp.path.ElementAt(temp.path.Count - 1).height) > (longestPath.path.Peek().height - longestPath.path.ElementAt(longestPath.path.Count - 1).height))
+                                {
+                                    longestPath = temp;
+                                }
+                            }
+                            else
                             {
                                 longestPath = temp;
                             }
                         }
-                        else
+                        else if (longestPath.path.Count < temp.path.Count)
                         {
                             longestPath = temp;
                         }
-                    }
-                    else if (longestPath.path.Count < temp.path.Count)
-                    {
-                        longestPath = temp;
                     }
                 }
             }
